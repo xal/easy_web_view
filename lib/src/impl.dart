@@ -1,17 +1,10 @@
 import 'package:easy_web_view/easy_web_view.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_markdown/flutter_markdown.dart';
-import 'package:html2md/html2md.dart' as html2md;
-import 'package:http/http.dart' as http;
-import 'package:markdown/markdown.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 class EasyWebViewImpl {
   final String src;
   final num? width, height;
   final bool webAllowFullScreen;
-  final bool isMarkdown;
-  final bool isHtml;
   final bool convertToWidgets;
   final Map<String, String> headers;
   final bool widgetsTextSelectable;
@@ -26,14 +19,12 @@ class EasyWebViewImpl {
     this.width,
     this.height,
     this.webAllowFullScreen = true,
-    this.isHtml = false,
-    this.isMarkdown = false,
     this.convertToWidgets = false,
     this.widgetsTextSelectable = false,
     this.headers = const {},
     this.crossWindowEvents = const [],
     this.webNavigationDelegate,
-  }) : assert((isHtml && isMarkdown) == false);
+  });
 
   static String wrapHtml(String src) {
     if (EasyWebViewImpl.isValidHtml(src)) {
@@ -53,10 +44,6 @@ $src
     }
     return src;
   }
-
-  static String html2Md(String src) => html2md.convert(src);
-
-  static String md2Html(String src) => markdownToHtml(src);
 
   static bool isUrl(String src) =>
       src.startsWith('https://') || src.startsWith('http://');
@@ -94,60 +81,6 @@ class OptionalSizedChild extends StatelessWidget {
           child: builder(w, h),
         );
       },
-    );
-  }
-}
-
-class RemoteMarkdown extends StatelessWidget {
-  const RemoteMarkdown({
-    required this.src,
-    required this.headers,
-    required this.isSelectable,
-  });
-
-  final String src;
-  final Map<String, String> headers;
-  final bool isSelectable;
-
-  @override
-  Widget build(BuildContext context) {
-    return FutureBuilder<http.Response>(
-      future: http.get(Uri.parse(src), headers: headers),
-      builder: (context, response) {
-        if (!response.hasData) {
-          return Center(child: CircularProgressIndicator());
-        }
-        if (response.data?.statusCode == 200) {
-          String content = response.data!.body;
-          if (EasyWebViewImpl.isValidHtml(src)) {
-            content = EasyWebViewImpl.html2Md(content);
-          }
-          return LocalMarkdown(
-            data: content,
-            isSelectable: isSelectable,
-          );
-        }
-        return Center(child: Icon(Icons.error));
-      },
-    );
-  }
-}
-
-class LocalMarkdown extends StatelessWidget {
-  final String data;
-  final bool isSelectable;
-
-  const LocalMarkdown({
-    required this.data,
-    required this.isSelectable,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Markdown(
-      data: data,
-      onTapLink: (_, url, __) => url == null ? null : launch(url),
-      selectable: isSelectable,
     );
   }
 }

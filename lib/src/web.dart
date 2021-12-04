@@ -16,14 +16,12 @@ class EasyWebView extends StatefulWidget implements EasyWebViewImpl {
     this.width,
     this.webAllowFullScreen = true,
     this.allow = "",
-    this.isHtml = false,
-    this.isMarkdown = false,
     this.convertToWidgets = false,
     this.headers = const {},
     this.widgetsTextSelectable = false,
     this.crossWindowEvents = const [],
     this.webNavigationDelegate,
-  })  : assert((isHtml && isMarkdown) == false),
+  })  :
         super(key: key);
 
   @override
@@ -41,14 +39,7 @@ class EasyWebView extends StatefulWidget implements EasyWebViewImpl {
   @override
   final bool webAllowFullScreen;
 
-  @override
   final String allow;
-
-  @override
-  final bool isMarkdown;
-
-  @override
-  final bool isHtml;
 
   @override
   final bool convertToWidgets;
@@ -107,25 +98,8 @@ class _EasyWebViewState extends State<EasyWebView> {
       builder: (w, h) {
         String src = widget.src;
         if (widget.convertToWidgets) {
-          if (EasyWebViewImpl.isUrl(src)) {
-            return RemoteMarkdown(
-              src: src,
-              headers: widget.headers,
-              isSelectable: widget.widgetsTextSelectable,
-            );
-          }
-          String _markdown = '';
-          if (widget.isMarkdown) {
-            _markdown = src;
-          }
-          if (widget.isHtml) {
             src = EasyWebViewImpl.wrapHtml(src);
-            _markdown = EasyWebViewImpl.html2Md(src);
-          }
-          return LocalMarkdown(
-            data: _markdown,
-            isSelectable: widget.widgetsTextSelectable,
-          );
+
         }
         _setup(src, w, h);
         return AbsorbPointer(
@@ -185,14 +159,11 @@ class _EasyWebViewState extends State<EasyWebView> {
       }
       String _src = src ?? '';
       if (src != null) {
-        if (widget.isMarkdown) {
-          _src = "data:text/html;charset=utf-8," +
-              Uri.encodeComponent(EasyWebViewImpl.md2Html(src));
-        }
-        if (widget.isHtml) {
+
+
           _src = "data:text/html;charset=utf-8," +
               Uri.encodeComponent(EasyWebViewImpl.wrapHtml(src));
-        }
+
       }
       element..src = _src;
       return element;
